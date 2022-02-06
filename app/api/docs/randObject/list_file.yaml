@@ -1,0 +1,8 @@
+Lists file data from db, please use this one to retrieve your previous generated file(s)
+---
+tags:
+  - random-object-extra
+
+responses:
+  404:
+    description: Data not found.

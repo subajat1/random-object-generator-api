@@ -10,7 +10,8 @@ from flask import (
 from flask_api import status
 from flask_pydantic import validate
 
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from flasgger import swag_from
 
 from app import db, app
 from app.api.models.file import File
@@ -40,6 +41,7 @@ url_prefix = f'/{route_path}'
 
 @bp.route('/generate', methods=['GET'])
 @validate(on_success_status=status.HTTP_201_CREATED)
+@swag_from('../docs/randObject/generate_random_objects.yaml')
 def generate_random_objects() -> Response:
     """
     Generates random-objects put into the file with db-valid filename
@@ -58,10 +60,16 @@ def generate_random_objects() -> Response:
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
+            return Response(
+                'Create data failed, filename exists.',
+                status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             # TODO: refactor to logging
             print(f'Exception {e.__class__} in generate_random_objects \
                 when inserting File {filename} to db')
+            return Response(
+                'Can not resolve the request.',
+                status=status.HTTP_400_BAD_REQUEST)
 
         return FileGenerationResponse(
             filename=filename,
@@ -76,6 +84,7 @@ def generate_random_objects() -> Response:
 
 @bp.route('/link/<path:filename>')
 @validate(on_success_status=status.HTTP_200_OK)
+@swag_from('../docs/randObject/retrieve_file.yaml')
 def retrieve_file(filename: str) -> Response:
     """
     Retrieves a file which file's name is from given filename path param value.
@@ -96,34 +105,37 @@ def retrieve_file(filename: str) -> Response:
 
 @bp.route('/list/', methods=['GET'])
 @validate(on_success_status=status.HTTP_200_OK, response_many=True)
+@swag_from('../docs/randObject/list_file.yaml')
 def list_file() -> Response:
     """
     Lists file data from db
     Response: array of FileLinksResponse
     """
-    files = File.query.all()
+    files = None
+    responses = []
+    base_url = request.url_root + route_path
 
-    if files:
-        base_url = request.url_root + route_path
+    try:
+        files = File.query.all()
+    except SQLAlchemyError:
+        # TODO: refactor to logging
+        print('SQLAlchemyError in list_file endpoint route') 
 
-        responses = []
-        for file in files:
-            responses.append(
-                FileLinksResponse(
-                    id=file.id,
-                    filename=file.filename+'.txt',
-                    created=file.created,
-                    url_link=base_url + '/link/' + file.filename,
-                    url_report=base_url + '/report/' + file.filename,))
+    for file in files:
+        responses.append(
+            FileLinksResponse(
+                id=file.id,
+                filename=file.filename+'.txt',
+                created=file.created,
+                url_link=base_url + '/link/' + file.filename,
+                url_report=base_url + '/report/' + file.filename,))
 
-        return responses
-
-    else:
-        return Response('No file in db.', status=status.HTTP_204_NO_CONTENT)
+    return responses
 
 
 @bp.route('/report/<path:filename>')
 @validate(on_success_status=status.HTTP_200_OK)
+@swag_from('../docs/randObject/generate_report.yaml')
 def generate_report(filename: str) -> Response:
     """
     Generates a report from a file about the total number of each random

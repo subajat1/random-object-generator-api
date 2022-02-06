@@ -1,0 +1,8 @@
+Generates random-objects put into the file with db-valid filename
+---
+tags:
+  - random-object
+
+responses:
+  400:
+    description: Generation failed, filename exists.

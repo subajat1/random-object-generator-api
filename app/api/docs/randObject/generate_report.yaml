@@ -1,0 +1,13 @@
+Generates a report from a file about the total number of each random object types.
+---
+tags:
+  - random-object
+
+parameters:
+  - in: path
+    name: filename
+    required: true
+
+responses:
+  404:
+    description: File not found.
