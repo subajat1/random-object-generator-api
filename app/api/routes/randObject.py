@@ -12,12 +12,17 @@ from flask_pydantic import validate
 
 from app import db, app
 from app.api.models.file import File
+
 from app.api.schemas.file import (
     FileGenerationResponse,
-    FileLinksResponse,)
+    FileLinksResponse,
+    FileReportResponse,)
+
 from app.utils.generatorUtil import (
     genRandObjects,
     genAlphanumericRandObject,)
+
+from app.utils.parserUtil import parseRandObjectsFromFile
 
 
 RANDOM_SEED = str(os.getenv('g_RANDOM_SEED', 'random_seed'))
@@ -112,3 +117,20 @@ def list_file() -> Response:
 
     else:
         return Response('No file in db.', status=status.HTTP_204_NO_CONTENT)
+
+
+@bp.route('/report/<path:filename>')
+@validate(on_success_status=status.HTTP_200_OK)
+def generate_report(filename: str) -> Response:
+
+    files = File.query.filter(File.filename == filename).all()
+
+    if files:
+        stats = parseRandObjectsFromFile(files[0].filename)
+
+        return FileReportResponse(
+            stats=stats,
+            file=files[0].serialize,)
+
+    else:
+        return Response('File not found', status=status.HTTP_404_NOT_FOUND)
