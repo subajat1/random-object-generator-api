@@ -32,7 +32,8 @@ MIN_SIZE = int(os.getenv('g_MIN_SIZE', 16))
 MAX_SIZE = int(os.getenv('g_MAX_SIZE', 256))
 
 bp = Blueprint('bp-rand-object', __name__)
-url_prefix = '/api/rand-object'
+route_path = 'api/rand-object'
+url_prefix = f'/{route_path}'
 
 
 @bp.route('/generate', methods=['GET'])
@@ -62,7 +63,7 @@ def generate_random_objects() -> Response:
     if filename and retry < retry_threshold:
         filesize = genRandObjects(rand, filename, MIN_SIZE, MAX_SIZE)
 
-        base_url = request.url_root + url_prefix
+        base_url = request.url_root + route_path
         url_link = base_url + '/link/' + filename
 
         db.session.add(File(filename=filename))
@@ -101,7 +102,7 @@ def list_file() -> Response:
     files = File.query.all()
 
     if files:
-        base_url = request.url_root + url_prefix
+        base_url = request.url_root + route_path
 
         responses = []
         for file in files:
