@@ -31,10 +31,6 @@ class FileResponse(BaseModel):
         anystr_strip_whitespace: True
 
 
-class FileReportRequest(BaseModel):
-    filename: str
-
-
 class FileStatResponse(BaseModel):
     count_alphabet: int
     count_real_num: int
