@@ -17,3 +17,12 @@ class File(db.Model):
 
     def __repr__(self) -> str:
         return 'File>>> {self.username}'
+
+    @property
+    def serialize(self) -> dict:
+        """Serialize File object into dict object"""
+        return {
+            'id': self.id,
+            'filename': self.filename+'.txt',
+            'created': self.created,
+        }
