@@ -4,11 +4,12 @@ from random import Random
 from flask import (
     Blueprint,
     Response,
+    send_from_directory,
 )
 from flask_api import status
 from flask_pydantic import validate
 
-from app import db
+from app import db, app
 from app.api.models.file import File
 from app.api.schemas.file import FileGenerationResponse
 from app.utils.generatorUtil import (
@@ -31,7 +32,6 @@ url_prefix = '/api/rand-object'
 def generate_random_objects() -> Response:
     """
     Generates random-objects put into the file with db-valid filename
-    Request: -
     Response: FileGenerationResponse
     """
     rand = Random(RANDOM_SEED) if TESTING_ENV else Random()
@@ -60,3 +60,23 @@ def generate_random_objects() -> Response:
     return FileGenerationResponse(
         filename=filename,
         filesize=filesize,)
+
+
+@bp.route('/link/<path:filename>')
+@validate(on_success_status=status.HTTP_200_OK)
+def retrieve_file(filename: str) -> Response:
+    """
+    Retrieves a file which file's name is from given filename path param value.
+    Path param: filename (string) represent a file's name (without extension)
+    Response: Response object (plain/text file)
+    """
+
+    try:
+        return send_from_directory(
+            app.config['MEDIA_FOLDER'],
+            f'{filename}.txt')
+
+    except Exception as e:
+        return Response(
+            f'File not found: {str(e)}',
+            status=status.HTTP_404_NOT_FOUND)
