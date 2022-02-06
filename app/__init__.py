@@ -12,3 +12,6 @@ db = SQLAlchemy(app)
 @app.route("/")
 def hello_world():
     return jsonify(app='random-object-generator')
+
+from app.api.routes.randObject import bp, url_prefix
+app.register_blueprint(bp, url_prefix=url_prefix)
