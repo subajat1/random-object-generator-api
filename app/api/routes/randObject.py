@@ -12,7 +12,9 @@ from flask_pydantic import validate
 
 from app import db, app
 from app.api.models.file import File
-from app.api.schemas.file import FileGenerationResponse
+from app.api.schemas.file import (
+    FileGenerationResponse,
+    FileLinksResponse,)
 from app.utils.generatorUtil import (
     genRandObjects,
     genAlphanumericRandObject,)
@@ -85,3 +87,28 @@ def retrieve_file(filename: str) -> Response:
         return Response(
             f'File not found: {str(e)}',
             status=status.HTTP_404_NOT_FOUND)
+
+
+@bp.route('/list/', methods=['GET'])
+@validate(on_success_status=status.HTTP_200_OK, response_many=True)
+def list_file() -> Response:
+
+    files = File.query.all()
+
+    if files:
+        base_url = request.url_root + url_prefix
+
+        responses = []
+        for file in files:
+            responses.append(
+                FileLinksResponse(
+                    id=file.id,
+                    filename=file.filename+'.txt',
+                    created=file.created,
+                    url_link=base_url + '/link/' + file.filename,
+                    url_report=base_url + '/report/' + file.filename,))
+
+        return responses
+
+    else:
+        return Response('No file in db.', status=status.HTTP_204_NO_CONTENT)
