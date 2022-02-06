@@ -37,27 +37,82 @@ def genRandObjectSizeInRange(rand: Random, min: int, max: int) -> int:
 
 def genAlphabetRandObject(rand: Random, size: int) -> str:
     """Generate an alphabet object in length of given size value"""
-    return ''.join(rand.choices(string.ascii_letters, k=size))
+    obj_alpha = None
+
+    try:
+        obj_alpha = ''.join(rand.choices(string.ascii_letters, k=size))
+    except ValueError:
+        # TODO: refactor to logging
+        print(f'ValueError during genAlphabetRandObject: {str(obj_alpha)}')
+    except Exception as e:
+        # TODO: refactor to logging
+        print(f'Exception {e.__class__} in \
+            genAlphabetRandObject: {str(obj_alpha)}')
+    finally:
+        return obj_alpha
 
 
-def genIntegerRandObject(rand: Random, size: int) -> int:
+def genIntegerRandObject(rand: Random, size: int) -> str:
     """Generate an integer object with digit(s) as in given size value"""
-    return int(''.join(rand.choices(string.digits, k=size)))
+    obj_int = None
+    obj = ''.join(rand.choices(string.digits, k=size))
+
+    try:
+        obj_int = int(obj)
+        if obj_int:
+            return obj
+        else:
+            return None
+    except ValueError:
+        # TODO: refactor to logging
+        print(f'ValueError during genIntegerRandObject: {str(obj)}')
+    except Exception as e:
+        # TODO: refactor to logging
+        print(f'Exception {e.__class__} in genIntegerRandObject: {str(obj)}')
 
 
-def genRealNumberRandObject(rand: Random, size: int) -> float:
+def genRealNumberRandObject(rand: Random, size: int) -> str:
     """Generate a real-number object with digit(s) before period mark is
         in length of 40% of given size value, and digit(s) after
         period mark is in length of 60% of given size value.
     """
+    obj_float = None
     num = ''.join(rand.choices(string.digits, k=math.floor(0.40*size)))
     dec = ''.join(rand.choices(string.digits, k=math.floor(0.60*size)))
-    return float(num + '.' + dec)
+    obj = num + '.' + dec
+
+    try:
+        obj_float = float(obj)
+        if obj_float:
+            return obj
+        else:
+            return None
+    except ValueError:
+        # TODO: refactor to logging
+        print(f'ValueError during genRealNumberRandObject: {str(obj)}')
+    except Exception as e:
+        # TODO: refactor to logging
+        print(f'Exception {e.__class__} in \
+            genRealNumberRandObject: {str(obj)}')
 
 
 def genAlphanumericRandObject(rand: Random, size: int) -> str:
     """Generate an alphanumeric object in length of given size value"""
-    return ''.join(rand.choices(string.digits + string.ascii_letters, k=size))
+    obj_alphanum = None
+
+    try:
+        obj_alphanum = ''.join(rand.choices(
+            string.digits + string.ascii_letters,
+            k=size))
+    except ValueError:
+        # TODO: refactor to logging
+        print(f'ValueError during genAlphabetRandObject: {str(obj_alphanum)}')
+    except Exception as e:
+        # TODO: refactor to logging
+        print(f'Exception {e.__class__} in \
+            genAlphabetRandObject: {str(obj_alphanum)}')
+    finally:
+        return obj_alphanum
 
 
 def genRandomObject(rand: Random, sizeMin: int, sizeMax: int) -> object:
@@ -70,19 +125,14 @@ def genRandomObject(rand: Random, sizeMin: int, sizeMax: int) -> object:
     objectType = genRandObjectType(rand)
     objectSize = genRandObjectSizeInRange(rand, sizeMin, sizeMax)
 
-    try:
-        if objectType == RandObjectType.ALPHABET:
-            return genAlphabetRandObject(rand, objectSize)
-        elif objectType == RandObjectType.REAL_NUMBER:
-            return genRealNumberRandObject(rand, objectSize)
-        elif objectType == RandObjectType.INTEGER:
-            return genIntegerRandObject(rand, objectSize)
-        elif objectType == RandObjectType.ALPHANUMERIC:
-            return genAlphanumericRandObject(rand, objectSize)
-    except ValueError:
-        print('ValueError during genRandomObject')
-    except Exception as e:
-        print(f'Exception {e.__class__} in genRandomObject')
+    if objectType == RandObjectType.ALPHABET:
+        return genAlphabetRandObject(rand, objectSize)
+    elif objectType == RandObjectType.REAL_NUMBER:
+        return genRealNumberRandObject(rand, objectSize)
+    elif objectType == RandObjectType.INTEGER:
+        return genIntegerRandObject(rand, objectSize)
+    elif objectType == RandObjectType.ALPHANUMERIC:
+        return genAlphanumericRandObject(rand, objectSize)
 
 
 def genRandObjects(rand: Random, filename: str, min: int, max: int) -> int:
@@ -100,7 +150,8 @@ def genRandObjects(rand: Random, filename: str, min: int, max: int) -> int:
 
         while file.tell() < SIZE_LIMIT_MB:
             object = genRandomObject(rand, min, max)
-            file.write(f'{object},')
+            if object:
+                file.write(f'{object},')
 
         filesize = file.tell()
 
