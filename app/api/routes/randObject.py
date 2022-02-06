@@ -10,7 +10,7 @@ from flask import (
 from flask_api import status
 from flask_pydantic import validate
 
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app import db, app
 from app.api.models.file import File
@@ -101,25 +101,26 @@ def list_file() -> Response:
     Lists file data from db
     Response: array of FileLinksResponse
     """
-    files = File.query.all()
+    files = None
+    responses = []
+    base_url = request.url_root + route_path
 
-    if files:
-        base_url = request.url_root + route_path
+    try:
+        files = File.query.all()
+    except SQLAlchemyError:
+        # TODO: refactor to logging
+        print('SQLAlchemyError in list_file endpoint route') 
 
-        responses = []
-        for file in files:
-            responses.append(
-                FileLinksResponse(
-                    id=file.id,
-                    filename=file.filename+'.txt',
-                    created=file.created,
-                    url_link=base_url + '/link/' + file.filename,
-                    url_report=base_url + '/report/' + file.filename,))
+    for file in files:
+        responses.append(
+            FileLinksResponse(
+                id=file.id,
+                filename=file.filename+'.txt',
+                created=file.created,
+                url_link=base_url + '/link/' + file.filename,
+                url_report=base_url + '/report/' + file.filename,))
 
-        return responses
-
-    else:
-        return Response('No file in db.', status=status.HTTP_204_NO_CONTENT)
+    return responses
 
 
 @bp.route('/report/<path:filename>')
