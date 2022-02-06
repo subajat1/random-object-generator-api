@@ -130,3 +130,6 @@ dmypy.json
 
 # VSCode
 .vscode/
+
+# DB app
+random-object-files.db
