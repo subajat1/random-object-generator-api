@@ -133,3 +133,9 @@ dmypy.json
 
 # DB app
 random-object-files.db
+
+# project media directory
+app/media/*.txt
+
+# mac
+.DS_Store
