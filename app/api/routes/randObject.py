@@ -5,6 +5,7 @@ from flask import (
     Blueprint,
     Response,
     send_from_directory,
+    request,
 )
 from flask_api import status
 from flask_pydantic import validate
@@ -54,12 +55,16 @@ def generate_random_objects() -> Response:
     if filename and retry < retry_threshold:
         filesize = genRandObjects(rand, filename, MIN_SIZE, MAX_SIZE)
 
+        base_url = request.url_root + url_prefix
+        url_link = base_url + '/link/' + filename
+
         db.session.add(File(filename=filename))
         db.session.commit()
 
     return FileGenerationResponse(
         filename=filename,
-        filesize=filesize,)
+        filesize=filesize,
+        url_link=url_link)
 
 
 @bp.route('/link/<path:filename>')
