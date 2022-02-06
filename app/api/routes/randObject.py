@@ -10,6 +10,8 @@ from flask import (
 from flask_api import status
 from flask_pydantic import validate
 
+from sqlalchemy.exc import IntegrityError
+
 from app import db, app
 from app.api.models.file import File
 
@@ -20,7 +22,7 @@ from app.api.schemas.file import (
 
 from app.utils.generatorUtil import (
     genRandObjects,
-    genAlphanumericRandObject,)
+    genValidFilename,)
 
 from app.utils.parserUtil import parseRandObjectsFromFile
 
@@ -45,34 +47,31 @@ def generate_random_objects() -> Response:
     """
     rand = Random(RANDOM_SEED) if TESTING_ENV else Random()
 
-    filename = ''
-    retry = 0
-    retry_threshold = 3
+    filename = genValidFilename(rand, FILENAME_SIZE, 3)
 
-    while retry < retry_threshold:
-        filename = genAlphanumericRandObject(rand, FILENAME_SIZE)
-        retry += 1
-        files = File.query.filter(File.filename == filename).all()
-        if not files:
-            break
-        elif files and retry >= retry_threshold:
-            return Response(
+    if filename:
+        filesize = genRandObjects(rand, filename, MIN_SIZE, MAX_SIZE)
+        url_link = request.url_root + route_path + '/link/' + filename
+
+        try:
+            db.session.add(File(filename=filename))
+            db.session.commit()
+        except IntegrityError:
+            db.session.rollback()
+        except Exception as e:
+            # TODO: refactor to logging
+            print(f'Exception {e.__class__} in generate_random_objects \
+                when inserting File {filename} to db')
+
+        return FileGenerationResponse(
+            filename=filename,
+            filesize=filesize,
+            url_link=url_link)
+
+    else:
+        return Response(
                 'Generation failed, filename exists.',
                 status=status.HTTP_400_BAD_REQUEST)
-
-    if filename and retry < retry_threshold:
-        filesize = genRandObjects(rand, filename, MIN_SIZE, MAX_SIZE)
-
-        base_url = request.url_root + route_path
-        url_link = base_url + '/link/' + filename
-
-        db.session.add(File(filename=filename))
-        db.session.commit()
-
-    return FileGenerationResponse(
-        filename=filename,
-        filesize=filesize,
-        url_link=url_link)
 
 
 @bp.route('/link/<path:filename>')
