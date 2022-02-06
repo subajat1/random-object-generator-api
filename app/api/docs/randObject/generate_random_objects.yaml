@@ -1,7 +1,7 @@
 Generates random-objects put into the file with db-valid filename
 ---
 tags:
-  - generate
+  - random-object
 
 responses:
   400:
