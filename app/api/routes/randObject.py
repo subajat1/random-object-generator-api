@@ -97,7 +97,10 @@ def retrieve_file(filename: str) -> Response:
 @bp.route('/list/', methods=['GET'])
 @validate(on_success_status=status.HTTP_200_OK, response_many=True)
 def list_file() -> Response:
-
+    """
+    Lists file data from db
+    Response: array of FileLinksResponse
+    """
     files = File.query.all()
 
     if files:
@@ -125,6 +128,7 @@ def generate_report(filename: str) -> Response:
     """
     Generates a report from a file about the total number of each random
     object types.
+    Response: FileReportResponse
     """
     file = File.query.filter(File.filename == filename).first()
 
