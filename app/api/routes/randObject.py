@@ -41,7 +41,7 @@ url_prefix = f'/{route_path}'
 
 @bp.route('/generate', methods=['GET'])
 @validate(on_success_status=status.HTTP_201_CREATED)
-@swag_from('../docs/generate_random_objects.yaml')
+@swag_from('../docs/randObject/generate_random_objects.yaml')
 def generate_random_objects() -> Response:
     """
     Generates random-objects put into the file with db-valid filename
@@ -84,6 +84,7 @@ def generate_random_objects() -> Response:
 
 @bp.route('/link/<path:filename>')
 @validate(on_success_status=status.HTTP_200_OK)
+@swag_from('../docs/randObject/retrieve_file.yaml')
 def retrieve_file(filename: str) -> Response:
     """
     Retrieves a file which file's name is from given filename path param value.
@@ -104,6 +105,7 @@ def retrieve_file(filename: str) -> Response:
 
 @bp.route('/list/', methods=['GET'])
 @validate(on_success_status=status.HTTP_200_OK, response_many=True)
+@swag_from('../docs/randObject/list_file.yaml')
 def list_file() -> Response:
     """
     Lists file data from db
@@ -133,6 +135,7 @@ def list_file() -> Response:
 
 @bp.route('/report/<path:filename>')
 @validate(on_success_status=status.HTTP_200_OK)
+@swag_from('../docs/randObject/generate_report.yaml')
 def generate_report(filename: str) -> Response:
     """
     Generates a report from a file about the total number of each random
