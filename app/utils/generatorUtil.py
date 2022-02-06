@@ -72,9 +72,10 @@ def genRandomObject(rand: Random, sizeMin: int, sizeMax: int) -> object:
         print(f'Exception {e.__class__} in genRandomObject')
 
 
-def genRandObjects(rand: Random, filename: str, min: int, max: int) -> list:
-
+def genRandObjects(rand: Random, filename: str, min: int, max: int) -> int:
+    """Generate random-objects as much as SIZE_LIMIT_MB"""
     filepath = os.path.join(f'{basedir}/media', f'{filename}.txt')
+    filesize = 0
 
     with open(filepath, 'w') as file:
 
@@ -82,4 +83,6 @@ def genRandObjects(rand: Random, filename: str, min: int, max: int) -> list:
             object = genRandomObject(rand, min, max)
             file.write(f'{object},')
 
-    return filename
+        filesize = file.tell()
+
+    return filesize
