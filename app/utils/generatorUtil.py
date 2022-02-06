@@ -1,4 +1,6 @@
 import os
+import string
+import math
 from enum import Enum
 from random import Random
 
@@ -30,3 +32,41 @@ def genRandObjectSizeInRange(rand: Random, min: int, max: int) -> str:
 
     else:
         return rand.randint(min, max)
+
+
+def genAlphabetRandObject(rand: Random, size: int) -> str:
+    return ''.join(rand.choices(string.ascii_letters, k=size))
+
+
+def genIntegerRandObject(rand: Random, size: int) -> int:
+    return int(''.join(rand.choices(string.digits, k=size)))
+
+
+def genRealNumberRandObject(rand: Random, size: int) -> float:
+    num = ''.join(rand.choices(string.digits, k=math.floor(0.40*size)))
+    dec = ''.join(rand.choices(string.digits, k=math.floor(0.60*size)))
+    return float(num + '.' + dec)
+
+
+def genAlphanumericRandObject(rand: Random, size: int) -> str:
+    return ''.join(rand.choices(string.digits + string.ascii_letters, k=size))
+
+
+def genRandomObject(rand: Random, sizeMin: int, sizeMax: int) -> object:
+
+    objectType = genRandObjectType(rand)
+    objectSize = genRandObjectSizeInRange(rand, sizeMin, sizeMax)
+
+    try:
+        if objectType == RandObjectType.ALPHABET:
+            return genAlphabetRandObject(rand, objectSize)
+        elif objectType == RandObjectType.REAL_NUMBER:
+            return genRealNumberRandObject(rand, objectSize)
+        elif objectType == RandObjectType.INTEGER:
+            return genIntegerRandObject(rand, objectSize)
+        elif objectType == RandObjectType.ALPHANUMERIC:
+            return genAlphanumericRandObject(rand, objectSize)
+    except ValueError:
+        print('ValueError during genRandomObject')
+    except Exception as e:
+        print(f'Exception {e.__class__} in genRandomObject')
