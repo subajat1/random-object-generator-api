@@ -159,7 +159,8 @@ def genRandObjects(rand: Random, filename: str, min: int, max: int) -> int:
     return filesize
 
 
-def genValidFilename(rand: Random, filename_size: int, retry_limit: int):
+def genValidFilename(rand: Random, filename_size: int,
+                     retry_limit: int) -> str:
     """Generate filename with db-checking"""
     filename = ''
     retry = 0
@@ -172,3 +173,5 @@ def genValidFilename(rand: Random, filename_size: int, retry_limit: int):
             break
         elif file and retry >= retry_limit:
             return None
+
+    return filename
