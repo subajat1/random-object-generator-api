@@ -122,15 +122,18 @@ def list_file() -> Response:
 @bp.route('/report/<path:filename>')
 @validate(on_success_status=status.HTTP_200_OK)
 def generate_report(filename: str) -> Response:
+    """
+    Generates a report from a file about the total number of each random
+    object types.
+    """
+    file = File.query.filter(File.filename == filename).first()
 
-    files = File.query.filter(File.filename == filename).all()
-
-    if files:
-        stats = parseRandObjectsFromFile(files[0].filename)
+    if file:
+        stats = parseRandObjectsFromFile(file.filename)
 
         return FileReportResponse(
             stats=stats,
-            file=files[0].serialize,)
+            file=file.serialize,)
 
     else:
         return Response('File not found', status=status.HTTP_404_NOT_FOUND)
