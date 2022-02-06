@@ -11,6 +11,7 @@ from flask_api import status
 from flask_pydantic import validate
 
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from flasgger import swag_from
 
 from app import db, app
 from app.api.models.file import File
@@ -40,6 +41,7 @@ url_prefix = f'/{route_path}'
 
 @bp.route('/generate', methods=['GET'])
 @validate(on_success_status=status.HTTP_201_CREATED)
+@swag_from('../docs/generate_random_objects.yaml')
 def generate_random_objects() -> Response:
     """
     Generates random-objects put into the file with db-valid filename
@@ -58,10 +60,16 @@ def generate_random_objects() -> Response:
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
+            return Response(
+                'Create data failed, filename exists.',
+                status=status.HTTP_400_BAD_REQUEST)
         except Exception as e:
             # TODO: refactor to logging
             print(f'Exception {e.__class__} in generate_random_objects \
                 when inserting File {filename} to db')
+            return Response(
+                'Can not resolve the request.',
+                status=status.HTTP_400_BAD_REQUEST)
 
         return FileGenerationResponse(
             filename=filename,
