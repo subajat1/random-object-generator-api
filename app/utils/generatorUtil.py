@@ -3,7 +3,7 @@ import string
 import math
 from enum import Enum
 from random import Random
-
+from app.config import basedir
 
 TESTING_ENV = os.getenv("g_TESTING_ENV", 'False').lower() in ('true', '1', 't')
 FILENAME_SIZE = int(os.getenv('g_FILENAME_SIZE', 16))
@@ -70,3 +70,16 @@ def genRandomObject(rand: Random, sizeMin: int, sizeMax: int) -> object:
         print('ValueError during genRandomObject')
     except Exception as e:
         print(f'Exception {e.__class__} in genRandomObject')
+
+
+def genRandObjects(rand: Random, filename: str, min: int, max: int) -> list:
+
+    filepath = os.path.join(f'{basedir}/media', f'{filename}.txt')
+
+    with open(filepath, 'w') as file:
+
+        while file.tell() < SIZE_LIMIT_MB:
+            object = genRandomObject(rand, min, max)
+            file.write(f'{object},')
+
+    return filename
