@@ -20,3 +20,28 @@ class FileLinksResponse(BaseModel):
 
     class Config:
         anystr_strip_whitespace: True
+
+
+class FileResponse(BaseModel):
+    id: int
+    filename: str
+    created: datetime
+
+    class Config:
+        anystr_strip_whitespace: True
+
+
+class FileReportRequest(BaseModel):
+    filename: str
+
+
+class FileStatResponse(BaseModel):
+    count_alphabet: int
+    count_real_num: int
+    count_integer: int
+    count_alphanumeric: int
+
+
+class FileReportResponse(BaseModel):
+    stats: FileStatResponse
+    file: FileResponse
