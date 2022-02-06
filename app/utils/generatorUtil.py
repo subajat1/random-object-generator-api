@@ -4,6 +4,7 @@ import math
 from enum import Enum
 from random import Random
 from app.config import basedir
+from app.api.models.file import File
 
 TESTING_ENV = os.getenv("g_TESTING_ENV", 'False').lower() in ('true', '1', 't')
 FILENAME_SIZE = int(os.getenv('g_FILENAME_SIZE', 16))
@@ -156,3 +157,18 @@ def genRandObjects(rand: Random, filename: str, min: int, max: int) -> int:
         filesize = file.tell()
 
     return filesize
+
+
+def genValidFilename(rand: Random, filename_size: int, retry_limit: int):
+    """Generate filename with db-checking"""
+    filename = ''
+    retry = 0
+
+    while retry < retry_limit:
+        filename = genAlphanumericRandObject(rand, filename_size)
+        retry += 1
+        file = File.query.filter(File.filename == filename).first()
+        if not file:
+            break
+        elif file and retry >= retry_limit:
+            return None
